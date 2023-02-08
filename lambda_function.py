@@ -18,6 +18,23 @@ def lambda_handler(event, context):
 
     data = response.json()
 
-    print(data)
+    print(type(data))
+    print(type(data['response']['time_series']))
+    
+    date = data['response']['time_series'][0]['timestamp']
+    solar_energy_exported = data['response']['time_series'][0]['solar_energy_exported']
+    grid_energy_imported = data['response']['time_series'][0]['grid_energy_imported']
+    grid_energy_exported_from_solar = data['response']['time_series'][0]['grid_energy_exported_from_solar']
+    consumer_energy_imported_from_grid = data['response']['time_series'][0]['consumer_energy_imported_from_grid']
+    consumer_energy_imported_from_solar = data['response']['time_series'][0]['consumer_energy_imported_from_solar']
+
+    print(date)
+    print(solar_energy_exported)
+    print(grid_energy_imported)
+    print(grid_energy_exported_from_solar)
+    print(consumer_energy_imported_from_grid)
+    print(consumer_energy_imported_from_solar)
+
+lambda_handler("Any", "Any")
 
 #Jay was here!
