@@ -1,2 +1,2 @@
 # SolarDataParser
-Python repo for SolarDataParser project!
+Python repo for SolarDataParser project
