@@ -63,8 +63,8 @@ def lambda_handler(event, context):
     scripts_response = requests.get(scripts_url)
     scripts_text = scripts_response.text
 
-    #Splitting and removing the first 5 lines
-    scripts_text = scripts_text.split("\n",5)[5]
+    #Splitting and removing the first 6 lines
+    scripts_text = scripts_text.split("\n",6)[6]
 
     #Write all variables and the script body to a string, so it can be output to S3 file
     updated_scripts_text = (
