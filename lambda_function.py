@@ -73,7 +73,8 @@ def lambda_handler(event, context):
         f"{total_consumer_energy_var_string}\n"
         f"{lifetime_solar_energy_exported_rounded_var_string}\n"
         f"{lifetime_net_energy_exported_grid_var_string}\n"
-        f"{lifetime_net_energy_exported_grid_value_var_string}\n"
+        f"{lifetime_net_energy_exported_grid_value_var_string}"
+        f"{scripts_text}"
     )
 
     object = s3.Object(
