@@ -50,7 +50,7 @@ def lambda_handler(event, context):
         lifetime_grid_energy_imported = tesla_lifetime_data['response']['time_series'][0]['grid_energy_imported']
         lifetime_grid_energy_imported_rounded = round(int(lifetime_grid_energy_imported)/1000,2)
 
-        lifetime_net_energy_exported_grid = round((lifetime_grid_energy_exported_from_solar_rounded - (lifetime_grid_energy_imported_rounded - 420)), 2)
+        lifetime_net_energy_exported_grid = round((lifetime_grid_energy_exported_from_solar_rounded - (lifetime_grid_energy_imported_rounded - 420)))
         lifetime_net_energy_exported_grid_var_string = f'var lifetime_net_energy_exported_grid = {lifetime_net_energy_exported_grid}'
         lifetime_net_energy_exported_grid_value = round(lifetime_net_energy_exported_grid * .26)
         lifetime_net_energy_exported_grid_value_var_string = f'var lifetime_net_energy_exported_grid_value = {lifetime_net_energy_exported_grid_value}'
@@ -77,6 +77,7 @@ def lambda_handler(event, context):
         f"{scripts_text}"
     )
 
+    #Upload the new copy of scripts.js with the new variables in it
     object = s3.Object(
         bucket_name='jayweier.com', 
         key='assets/scripts.js'
