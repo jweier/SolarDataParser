@@ -5,8 +5,10 @@ s3 = boto3.resource('s3')
 
 def lambda_handler(event, context):
 
-    tesla_monthly_data = tesla.call_tesla_api("monthly")
-    tesla_lifetime_data = tesla.call_tesla_api("lifetime")
+    new_access_token = tesla.get_new_token()
+
+    tesla_monthly_data = tesla.call_tesla_api("monthly", new_access_token)
+    tesla_lifetime_data = tesla.call_tesla_api("lifetime", new_access_token)
 
     time_series_list = []
     time_series_dict = {"Date": time_series_list}

@@ -3,14 +3,10 @@ import json
 from datetime import datetime
 import calendar
 import boto3
+from botocore.exceptions import ClientError
+
 
 s3 = boto3.resource('s3')
-
-auth_token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im5ZdVZJWTJTN3gxVHRYM01KMC1QMDJad3pXQSJ9.eyJpc3MiOiJodHRwczovL2F1dGgudGVzbGEuY29tL29hdXRoMi92MyIsImF1ZCI6WyJodHRwczovL293bmVyLWFwaS50ZXNsYW1vdG9ycy5jb20vIiwiaHR0cHM6Ly9hdXRoLnRlc2xhLmNvbS9vYXV0aDIvdjMvdXNlcmluZm8iXSwiYXpwIjoib3duZXJhcGkiLCJzdWIiOiJmOTQ4ZWExMi02MDE4LTRiMzgtOTdlYi00NTZkNjBhNTY5NjMiLCJzY3AiOlsib3BlbmlkIiwiZW1haWwiLCJvZmZsaW5lX2FjY2VzcyJdLCJhbXIiOlsicHdkIl0sImV4cCI6MTY3NjE4NzY0NiwiaWF0IjoxNjc2MTU4ODQ2LCJhdXRoX3RpbWUiOjE2NzYxNTg4NDN9.apQCS5wKSSiLJ3i45EfZEkVpRuGKnA6SREn5xrNOaw4fhu6G6kdzp79BfLVbRvoIMDvEJwMur95XOU_8y9Gl-SI656ZpaLxs44tEZsf269Yp2t8ULcqLhF3jFVGfaLndTjP3cooP45iDgvLZWRlROysv_8w2UTr6xhCSXgYCpW-VCq8qfLmyyeILr8WUv9S7QdT7zW1JPsXuPyBg9lLjDor4VLXKOAW5CoKak0RSsGdLF-IGye8J5rViFIv6SFxU5y1qH-bnSBQibCrvRi5CADgAerPGtoYgLzfEpWXzjHn9ngHjNsmvqUK9WhBpRrAqpAT_LKVSal4YrvXhvwJdDQ"
-tesla_headers = {
-        'Authorization': 'Bearer ' + auth_token,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
-}
 
 currentYear = datetime.now().year
 input_dt = datetime.today()
@@ -22,7 +18,53 @@ month_in_two_digits = '{:%m}'.format(input_dt)
 res = calendar.monthrange(input_dt.year, input_dt.month)
 last_day_of_month = str(res[1])
 
-def call_tesla_api(duration):
+def get_refresh_token_from_secrets_manager():
+
+    secret_name = "SolarDataParser/refresh_token"
+    region_name = "us-east-1"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+    secrets = json.loads(get_secret_value_response['SecretString'])
+
+    return secrets['refresh_token']
+
+def get_new_token():
+    
+    refresh_token = get_refresh_token_from_secrets_manager()
+
+    tesla_auth_url = "https://auth.tesla.com/oauth2/v3/token"
+    tesla_auth_response = requests.post(tesla_auth_url, json={
+        "grant_type": "refresh_token",
+	    "client_id": "ownerapi",
+        "refresh_token": refresh_token,
+	    "scope": "openid email offline_access"
+    })
+
+    tesla_auth_response = tesla_auth_response.json()
+    new_access_token = tesla_auth_response["access_token"]
+
+    return(new_access_token)
+
+def call_tesla_api(duration, new_access_token):
+    tesla_headers = {
+        'Authorization': 'Bearer ' + new_access_token,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
+}
     if duration == "monthly":
         data_key_name = f'assets/rawjsondata/{currentYear}-{month_in_two_digits}.json'
         tesla_url = f'https://owner-api.teslamotors.com/api/1/energy_sites/2252180269197839/calendar_history?period=month&kind=energy&time_zone=America/New_York&start_date=2023-{month_in_two_digits}-01T00%3A00%3A00-05%3A00&end_date=2023-{month_in_two_digits}-{last_day_of_month}T23%3A59%3A59-05%3A00'
