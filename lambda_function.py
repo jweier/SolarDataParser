@@ -1,121 +1,121 @@
 import boto3
 import tesla
-import requests 
+import requests
+import pandas
 s3 = boto3.resource('s3')
+conn = boto3.client('s3')
 
 def lambda_handler(event, context):
 
-    new_access_token = tesla.get_new_token()
+    #Call to Tesla to get the latest copy of the monthly data and store in S3
+    tesla.call_tesla_api()
 
-    tesla_monthly_data = tesla.call_tesla_api("monthly", new_access_token)
-    tesla_lifetime_data = tesla.call_tesla_api("lifetime", new_access_token)
+    all_variables = ""
 
-    time_series_list = []
-    time_series_dict = {"Date": time_series_list}
-    solar_energy_exported_list = []
-    solar_energy_exported_dict = {"kWhCreated": solar_energy_exported_list}
-    consumer_energy_imported_from_grid_list = []
-    consumer_energy_imported_from_grid_dict = {"kWh": consumer_energy_imported_from_grid_list}
-    consumer_energy_imported_from_solar_list = []
-    consumer_energy_imported_from_solar_dict = {"kWh": consumer_energy_imported_from_solar_list}
-    total_consumer_energy_list = []
-    total_consumer_energy_dict = {"kWhUsed": total_consumer_energy_list}
+    previous_months_json_files_list = []
+    time_series = pandas.DataFrame()
 
-    #Parse through the current month JSON reply and extract the data that is valuable
-    for entry in tesla_monthly_data['response']['time_series']:
-        if entry['solar_energy_exported'] != 0:
+    #Parse through the S3 bucket and find JSON files for previous months data
+    for key in conn.list_objects(Bucket='jayweier.com')['Contents']:
+        if key['Key'].startswith("assets/rawjsondata/202") and ".json":
+            previous_months_json_files_list.append(key['Key'])
 
-            #Parsing the timestamp
-            timestamp_unformatted = entry['timestamp']
-            timestamp_year = timestamp_unformatted[0:4]
-            timestamp_month = timestamp_unformatted[5:7]
-            timestamp_day = timestamp_unformatted[8:10]
-            timestamp_formatted = f'{timestamp_month}-{timestamp_day}-{timestamp_year}'                        
-            time_series_list.append(timestamp_formatted)
-            
-            #Amount of solar produced for that day
-            solar_energy_exported_rounded = round(int(entry['solar_energy_exported'])/1000,2)
-            solar_energy_exported_list.append(solar_energy_exported_rounded)
-
-            #Amount of electricty used by house from Eversource that day
-            consumer_energy_imported_from_grid_rounded = round(int(entry['consumer_energy_imported_from_grid'])/1000,2)
-            consumer_energy_imported_from_grid_list.append(consumer_energy_imported_from_grid_rounded)
-
-            #Amount of electricty used by house from solar that day
-            consumer_energy_imported_from_solar_rounded = round(int(entry['consumer_energy_imported_from_solar'])/1000,2)
-            consumer_energy_imported_from_solar_list.append(consumer_energy_imported_from_solar_rounded)
-
-            #Total amount of electricity used by house that day
-            total_consumer_energy_rounded = round((consumer_energy_imported_from_grid_rounded + consumer_energy_imported_from_solar_rounded),2)
-            total_consumer_energy_list.append(total_consumer_energy_rounded)
-
-    #Store data into strings that can be output to Javascript variables
-    time_series_var_string = f'var date = {time_series_dict}'
-    solar_energy_exported_var_string = f'var solar_energy_exported = {solar_energy_exported_dict}'
-    consumer_energy_imported_from_grid_var_string = f'var consumer_energy_imported_from_grid = {consumer_energy_imported_from_grid_dict}'
-    consumer_energy_imported_from_solar_var_string = f'var consumer_energy_imported_from_solar = {consumer_energy_imported_from_solar_dict}'
-    total_consumer_energy_var_string = f'var total_consumer_energy = {total_consumer_energy_dict}'
+    #Download the previous months files and merge into a single dataframe
+    for previous_month in previous_months_json_files_list:
+        s3_url = f"https://s3.amazonaws.com/jayweier.com/{previous_month}"
+        data = pandas.read_json(s3_url)
+        time_series_data = pandas.DataFrame(data["response"]["time_series"])
+        time_series = pandas.concat([time_series,time_series_data], ignore_index=True)
+        time_series = time_series[time_series["solar_energy_exported"]!=0]
 
 
-    #Parse through the lifetime JSON reply and extract the data that is valuable
-    for entry in tesla_lifetime_data['response']['time_series']:   
-        
-        #How many kWh the system has produced in its lifetime
-        lifetime_solar_energy_exported = tesla_lifetime_data['response']['time_series'][0]['solar_energy_exported']
-        lifetime_solar_energy_exported_rounded = round(int(lifetime_solar_energy_exported)/1000,2)
-        lifetime_solar_energy_exported_rounded_var_string = f'var lifetime_solar_energy_exported = {lifetime_solar_energy_exported_rounded}'
-        
-        #The value of all of the solar energy produced by the system
-        lifetime_solar_energy_exported_value = round(lifetime_solar_energy_exported_rounded * .31)
-        lifetime_solar_energy_exported_value_var_string = f'var lifetime_solar_energy_exported_value = {lifetime_solar_energy_exported_value}'
+    #Drop columns that aren't applicable
+    time_series = time_series.drop([
+        'generator_energy_exported',
+        'grid_services_energy_imported',
+        'grid_services_energy_exported',
+        'grid_energy_exported_from_generator',
+        'grid_energy_exported_from_battery',
+        'battery_energy_exported',
+        'battery_energy_imported_from_grid',
+        'battery_energy_imported_from_solar',
+        'battery_energy_imported_from_generator',
+        'consumer_energy_imported_from_battery',
+        'consumer_energy_imported_from_generator'], axis=1)
 
-        #The amount of electricy that was sent to Eversource from Solar
-        lifetime_grid_energy_exported_from_solar = tesla_lifetime_data['response']['time_series'][0]['grid_energy_exported_from_solar']
-        lifetime_grid_energy_exported_from_solar_rounded = round(int(lifetime_grid_energy_exported_from_solar)/1000,2)
+    #Add new calculated values to dataframe
+    time_series["net_energy"] = time_series["grid_energy_exported_from_solar"] - time_series["grid_energy_imported"]
+    time_series["consumer_energy_imported_from_everywhere"] = time_series["consumer_energy_imported_from_solar"] + time_series["consumer_energy_imported_from_grid"]
 
-        #The mount of electricity that was used by house from Eversource
-        lifetime_grid_energy_imported = tesla_lifetime_data['response']['time_series'][0]['grid_energy_imported']
-        lifetime_grid_energy_imported_rounded = round(int(lifetime_grid_energy_imported)/1000,2)
+    #Calculate lifetime energy used by sum'ing 
+    lifetime_energy_imported_from_everywhere = round((time_series["consumer_energy_imported_from_everywhere"].sum()/1000),2)
+    all_variables += f'var lifetime_energy_imported_from_everywhere = {lifetime_energy_imported_from_everywhere}\n'
 
-        #The difference between the amount of electricty sent to Eversource and used by the house from Eversource
-        lifetime_net_energy_exported_grid = round((lifetime_grid_energy_exported_from_solar_rounded - (lifetime_grid_energy_imported_rounded - 420)))
-        lifetime_net_energy_exported_grid_var_string = f'var lifetime_net_energy_exported_grid = {lifetime_net_energy_exported_grid}'
-        
-        #The value of the difference of between the amount of electricty sent to Eversource and used by the house from Eversource
-        lifetime_net_energy_exported_grid_value = round(lifetime_net_energy_exported_grid * .26)
-        lifetime_net_energy_exported_grid_value_var_string = f'var lifetime_net_energy_exported_grid_value = {lifetime_net_energy_exported_grid_value}'
-        
+    #Calculate lifetime net energy by sum'ing the columns and finding the difference
+    lifetime_net_energy = int((time_series["grid_energy_exported_from_solar"].sum() - time_series["grid_energy_imported"].sum())/1000)
+    print(f'Lifetime Net Energy: {lifetime_net_energy}')
+    all_variables += f'var lifetime_net_energy = {lifetime_net_energy}\n'
 
+    #The value of the the net energy sent back to Eversource
+    lifetime_net_energy_value = round(lifetime_net_energy * .26)
+    print(f'Lifetime Net Energy Value: {lifetime_net_energy_value}')
+    all_variables += f'var lifetime_net_energy_value = {lifetime_net_energy_value}\n'
+
+    #The total of all of the solar energy produced by the system in kWh
+    lifetime_solar_energy_exported = round(time_series["solar_energy_exported"].sum()/1000)
+    print(f'Lifetime Solar Energy Created: {lifetime_solar_energy_exported}')
+    all_variables += f'var lifetime_solar_energy_exported = {lifetime_solar_energy_exported}\n'
+
+    #The value of all of the solar energy produced by the system
+    lifetime_solar_energy_exported_value = round((time_series["solar_energy_exported"].sum()/1000) * .31)
+    print(f'Lifetime Solar Energy Created Value: {lifetime_solar_energy_exported_value}')
+    all_variables += f'var lifetime_solar_energy_exported_value = {lifetime_solar_energy_exported_value}\n'
+
+    #Lifetime daily electricity used in house
+    lifetime_avg_daily_electricity_usage = round((time_series["consumer_energy_imported_from_everywhere"].mean()/1000),2)
+    print(f'Daily Average Electricity Usage: {lifetime_avg_daily_electricity_usage}')
+    all_variables += f'var lifetime_avg_daily_electricity_usage = {lifetime_avg_daily_electricity_usage}\n'
+
+    #Lifetime daily electricity produced from solar
+    lifetime_avg_daily_produced_by_solar = round((time_series["solar_energy_exported"].mean()/1000),2)
+    print(f'Daily Average Electricity Produced from Solar: {lifetime_avg_daily_produced_by_solar}')
+    all_variables += f'var lifetime_avg_daily_produced_by_solar = {lifetime_avg_daily_produced_by_solar}\n'
+
+    #Format and output the dataframe in a JS variable compatible format
+    for column in time_series:
+        if column != "timestamp":
+            time_series[column] = time_series[column].div(1000)
+            time_series[column] = time_series[column].astype('int')
+        elif column == "timestamp":
+            time_series[column]=time_series[column].str[:10]
+            time_series[column] = pandas.to_datetime(time_series[column], format='%Y-%m-%d')
+            time_series[column] = time_series[column].dt.strftime('%m-%d-%Y')
+        column_in_list = time_series[column].values.tolist()
+        column_with_var_prefix = f"var {column} = {column_in_list}"
+        print(column_with_var_prefix)
+        all_variables += f'{column_with_var_prefix}\n'
+        # all_variables += "\n"
 
     #Download the existing data file
     scripts_url = "http://jayweier.com/assets/scripts.js"
     scripts_response = requests.get(scripts_url)
     scripts_text = scripts_response.text
 
-    #Splitting and removing the first 9 lines
-    scripts_text = scripts_text.split("\n",9)[9]
+    #Splitting and removing the first n lines based on the number of variables in all_variables
+    nlines = all_variables.count('\n')
+    scripts_text = scripts_text.split("\n",nlines)[nlines]
 
-    #Write all variables and the script body to a string, so it can be output to S3 file
-    updated_scripts_text = (
-        f"{time_series_var_string}\n"
-        f"{solar_energy_exported_var_string}\n"
-        f"{total_consumer_energy_var_string}\n"
-        f"{lifetime_solar_energy_exported_rounded_var_string}\n"
-        f"{lifetime_solar_energy_exported_value_var_string}\n"
-        f"{consumer_energy_imported_from_grid_var_string}\n"
-        F"{consumer_energy_imported_from_solar_var_string}\n"
-        f"{lifetime_net_energy_exported_grid_var_string}\n"
-        f"{lifetime_net_energy_exported_grid_value_var_string}\n"
-        f"{scripts_text}"
-    )
+    #Adding the rest of the .js script to all_variables so it can be output as one file
+    all_variables += scripts_text
+
 
     #Upload the new copy of scripts.js with the new variables in it
     object = s3.Object(
         bucket_name='jayweier.com', 
         key='assets/scripts.js'
     )
+    object.put(Body=all_variables)
 
-    object.put(Body=updated_scripts_text)
 
 lambda_handler("Any", "Any")
 

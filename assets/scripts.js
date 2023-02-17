@@ -1,12 +1,23 @@
-var date = {'Date': ['02-01-2023', '02-02-2023', '02-03-2023', '02-04-2023', '02-05-2023', '02-06-2023', '02-07-2023', '02-08-2023', '02-09-2023', '02-10-2023', '02-11-2023', '02-12-2023', '02-13-2023', '02-14-2023', '02-15-2023']}
-var solar_energy_exported = {'kWhCreated': [17.27, 28.31, 20.88, 31.01, 26.15, 23.7, 16.58, 23.77, 26.0, 8.82, 27.06, 31.2, 20.53, 27.74, 28.72]}
-var total_consumer_energy = {'kWhUsed': [15.47, 21.74, 21.16, 17.62, 20.89, 14.42, 16.39, 17.0, 13.18, 13.78, 18.37, 15.48, 13.22, 19.51, 13.82]}
-var lifetime_solar_energy_exported = 361.51
-var lifetime_solar_energy_exported_value = 112
-var consumer_energy_imported_from_grid = {'kWh': [10.96, 8.69, 13.66, 10.37, 14.63, 8.56, 8.93, 11.33, 7.12, 8.96, 10.99, 8.23, 8.26, 7.66, 7.62]}
-var consumer_energy_imported_from_solar = {'kWh': [4.51, 13.05, 7.5, 7.25, 6.26, 5.86, 7.46, 5.67, 6.06, 4.82, 7.38, 7.25, 4.96, 11.85, 6.2]}
-var lifetime_net_energy_exported_grid = 150
-var lifetime_net_energy_exported_grid_value = 39
+var lifetime_energy_imported_from_everywhere = 267.13
+var lifetime_net_energy = 114
+var lifetime_net_energy_value = 30
+var lifetime_solar_energy_exported = 382
+var lifetime_solar_energy_exported_value = 118
+var lifetime_avg_daily_electricity_usage = 16.7
+var lifetime_avg_daily_produced_by_solar = 23.86
+var timestamp = ['02-01-2023', '02-02-2023', '02-03-2023', '02-04-2023', '02-05-2023', '02-06-2023', '02-07-2023', '02-08-2023', '02-09-2023', '02-10-2023', '02-11-2023', '02-12-2023', '02-13-2023', '02-14-2023', '02-15-2023', '02-16-2023']
+var solar_energy_exported = [17, 28, 20, 31, 26, 23, 16, 23, 26, 8, 27, 31, 20, 27, 28, 24]
+var grid_energy_imported = [10, 8, 13, 10, 14, 8, 8, 11, 7, 8, 10, 8, 8, 7, 7, 8]
+var grid_energy_exported_from_solar = [12, 15, 13, 23, 19, 17, 9, 18, 19, 4, 19, 23, 15, 15, 22, 17]
+var consumer_energy_imported_from_grid = [10, 8, 13, 10, 14, 8, 8, 11, 7, 8, 10, 8, 8, 7, 7, 8]
+var consumer_energy_imported_from_solar = [4, 13, 7, 7, 6, 5, 7, 5, 6, 4, 7, 7, 4, 11, 6, 6]
+var net_energy = [1, 6, 0, 13, 5, 9, 0, 6, 12, -4, 8, 15, 7, 8, 14, 8]
+var consumer_energy_imported_from_everywhere = [15, 21, 21, 17, 20, 14, 16, 17, 13, 13, 18, 15, 13, 19, 13, 15]
+
+
+
+
+
 
 
 
@@ -22,25 +33,6 @@ Apex.dataLabels = {
   enabled: false
 }
 
-var randomizeArray = function (arg) {
-  var array = arg.slice();
-  var currentIndex = array.length, temporaryValue, randomIndex;
-
-  while (0 !== currentIndex) {
-
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
-}
-
-// data for the sparklines that appear below header area
-var sparklineData = [47, 45, 54, 38, 56, 24, 65, 31, 37, 39, 62, 51, 35, 41, 35, 27, 93, 53, 61, 27, 54, 43, 19, 46];
 
 // the default colorPalette for this dashboard
 //var colorPalette = ['#01BFD6', '#5564BE', '#F7A600', '#EDCD24', '#F74F58'];
@@ -64,16 +56,15 @@ var spark1 = {
   },
   series: [{
     name: 'kWh',
-    // data: randomizeArray(sparklineData)
-    data: solar_energy_exported.kWhCreated
+    data: solar_energy_exported
   }],
-  labels: date.Date,
+  labels: timestamp,
   yaxis: {
     min: 0
   },
   xaxis: {
     type: 'datetime',
-    categories: date.Date,
+    categories: timestamp,
   },
   colors: ['#DCE6EC'],
   title: {
@@ -111,19 +102,20 @@ var spark2 = {
     opacity: 1,
   },
   series: [{
-    name: 'Net Energy Exported (kWH)',
-    data: randomizeArray(sparklineData)
+    name: 'Net Energy Expored (kWh)',
+    data: net_energy
   }],
-  labels: [...Array(24).keys()].map(n => `2018-09-0${n+1}`),
+  labels: timestamp,
   yaxis: {
     min: 0
   },
   xaxis: {
     type: 'datetime',
+    categories: timestamp,
   },
   colors: ['#DCE6EC'],
   title: {
-    text: lifetime_net_energy_exported_grid + "   ($" + lifetime_net_energy_exported_grid_value + ")",
+    text: lifetime_net_energy + "   ($" + lifetime_net_energy_value + ")",
     offsetX: 30,
     style: {
       fontSize: '24px',
@@ -139,33 +131,6 @@ var spark2 = {
     }
   }
 }
-
-// var spark3 = {
-//   chart: {
-//     id: 'sparkline3',
-//     group: 'sparklines',
-//     type: 'donut',
-//     // height: 160,
-//     // sparkline: {
-//     //   enabled: true
-//     // },
-//   },
-//   series: [1],
-//   labels: ["Days Stashed"],
-//   plotOptions: {
-//     pie: {
-//       donut: {
-//         labels: {
-//           show: true,
-//         }
-//       },
-//       size: 200
-//     }
-//   },
-//   dataLabels: {
-//     enabled: false,
-//   }
-// }
 
 var spark3 = {
   chart: {
@@ -185,7 +150,7 @@ var spark3 = {
   },
   series: [{
     name: 'Days Stashed',
-    data: randomizeArray(sparklineData)
+    data: Math.round(lifetime_net_energy/17)
   }],
   labels: [...Array(24).keys()].map(n => `2018-09-0${n+1}`),
   xaxis: {
@@ -196,8 +161,9 @@ var spark3 = {
   },
   colors: ['#008FFB'],
   title: {
-    text: Math.round(lifetime_net_energy_exported_grid/17),
-    offsetX: 30,
+    text: Math.round(lifetime_net_energy/17),
+    align: 'center',
+    margin: 75,
     style: {
       fontSize: '24px',
       cssClass: 'apexcharts-yaxis-title'
@@ -205,7 +171,8 @@ var spark3 = {
   },
   subtitle: {
     text: 'Days Stashed',
-    offsetX: 30,
+    align: 'center',
+    margin: 75,
     style: {
       fontSize: '14px',
       cssClass: 'apexcharts-yaxis-title'
@@ -214,9 +181,58 @@ var spark3 = {
 }
 
 
+var spark4 = {
+  chart: {
+    id: 'sparkline4',
+    group: 'sparklines',
+    type: 'donut',
+    height: 160,
+    sparkline: {
+      enabled: true
+    },
+  },
+  stroke: {
+    curve: 'straight'
+  },
+  fill: {
+    opacity: 1,
+  },
+  series: [{
+    name: 'Dollars Saved',
+    data: Math.round(lifetime_energy_imported_from_everywhere*.2938)
+  }],
+  labels: [...Array(24).keys()].map(n => `2018-09-0${n+1}`),
+  xaxis: {
+    type: 'datetime',
+  },
+  yaxis: {
+    min: 0
+  },
+  colors: ['#008FFB'],
+  title: {
+    text: '$' + Math.round(lifetime_energy_imported_from_everywhere*.2938),
+    align: 'center',
+    margin: 75,
+    style: {
+      fontSize: '24px',
+      cssClass: 'apexcharts-yaxis-title'
+    }
+  },
+  subtitle: {
+    text: 'Dollars Saved',
+    align: 'center',
+    margin: 75,
+    style: {
+      fontSize: '14px',
+      cssClass: 'apexcharts-yaxis-title'
+    }
+  }
+}
+
 new ApexCharts(document.querySelector("#spark1"), spark1).render();
 new ApexCharts(document.querySelector("#spark2"), spark2).render();
 new ApexCharts(document.querySelector("#spark3"), spark3).render();
+new ApexCharts(document.querySelector("#spark4"), spark4).render();
 
 
 var optionsArea = {
@@ -225,10 +241,10 @@ var optionsArea = {
   },
   series: [{
   name: 'kWh Produced',
-  data: solar_energy_exported.kWhCreated
+  data: solar_energy_exported
 }, {
   name: 'kWh Used',
-  data: total_consumer_energy.kWhUsed
+  data: consumer_energy_imported_from_everywhere
 }],
   chart: {
   height: 350,
@@ -242,7 +258,7 @@ stroke: {
 },
 xaxis: {
   type: 'datetime',
-  categories: date.Date
+  categories: timestamp
 },
 yaxis: {
   labels: {
@@ -266,6 +282,57 @@ tooltip: {
 
 var chartArea = new ApexCharts(document.querySelector("#area"), optionsArea);
 chartArea.render();
+
+
+var optionsEnergyConsumptionChart = {
+  title: {
+    text: "Energy Consumption (Grid vs. Solar)"
+  },
+  series: [{
+  name: 'From Grid',
+  data: consumer_energy_imported_from_grid
+}, {
+  name: 'From Solar',
+  data: consumer_energy_imported_from_solar
+}],
+  chart: {
+  height: 350,
+  type: 'area',
+  stacked: true,
+},
+dataLabels: {
+  enabled: false
+},
+stroke: {
+  curve: 'smooth'
+},
+xaxis: {
+  type: 'datetime',
+  categories: timestamp
+},
+yaxis: {
+  labels: {
+    formatter: (value) => {
+      return value.toFixed(0)
+    },
+  }
+},
+legend: {
+  itemMargin: {
+    horizontal: 10,
+    vertical: 10
+  },
+},
+tooltip: {
+  x: {
+    format: 'MM/dd/yy'
+  },
+},
+};
+
+var energyConsumptionChart = new ApexCharts(document.querySelector("#energyConsumptionChart"), optionsEnergyConsumptionChart);
+energyConsumptionChart.render();
+
 
 var optionsBar = {
   chart: {
