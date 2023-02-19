@@ -2,13 +2,19 @@ import boto3
 import tesla
 import requests
 import pandas
+import os
 s3 = boto3.resource('s3')
 conn = boto3.client('s3')
+
+deployment_type = 's3'
+code_base = os.getenv('BUCKET_NAME')
+# code_base = "jayweier.com"
+print(code_base)
 
 def lambda_handler(event, context):
 
     #Call to Tesla to get the latest copy of the monthly data and store in S3
-    tesla.call_tesla_api()
+    tesla.call_tesla_api(deployment_type = deployment_type, code_base=code_base)
 
     all_variables = ""
 
@@ -16,13 +22,13 @@ def lambda_handler(event, context):
     time_series = pandas.DataFrame()
 
     #Parse through the S3 bucket and find JSON files for previous months data
-    for key in conn.list_objects(Bucket='jayweier.com')['Contents']:
+    for key in conn.list_objects(Bucket=code_base)['Contents']:
         if key['Key'].startswith("assets/rawjsondata/202") and ".json":
             previous_months_json_files_list.append(key['Key'])
 
     #Download the previous months files and merge into a single dataframe
     for previous_month in previous_months_json_files_list:
-        s3_url = f"https://s3.amazonaws.com/jayweier.com/{previous_month}"
+        s3_url = f"https://s3.amazonaws.com/{code_base}/{previous_month}"
         data = pandas.read_json(s3_url)
         time_series_data = pandas.DataFrame(data["response"]["time_series"])
         time_series = pandas.concat([time_series,time_series_data], ignore_index=True)
@@ -97,7 +103,7 @@ def lambda_handler(event, context):
         # all_variables += "\n"
 
     #Download the existing data file
-    scripts_url = "http://jayweier.com/assets/scripts.js"
+    scripts_url = f"http://{code_base}/assets/scripts.js"
     scripts_response = requests.get(scripts_url)
     scripts_text = scripts_response.text
 
@@ -111,7 +117,7 @@ def lambda_handler(event, context):
 
     #Upload the new copy of scripts.js with the new variables in it
     object = s3.Object(
-        bucket_name='jayweier.com', 
+        bucket_name=code_base, 
         key='assets/scripts.js'
     )
     object.put(Body=all_variables)
