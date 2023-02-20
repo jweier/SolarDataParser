@@ -1,13 +1,10 @@
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, date
+from dateutil import rrule
 import calendar
 import boto3
 from botocore.exceptions import ClientError
-
-#Put your refresh token in here if running locally and can safely put the refresh token in the code
-#Refresh token can be obtain by following the steps on https://tesla-info.com/tesla-token.php
-refresh_token = ""
 
 s3 = boto3.resource('s3')
 
@@ -39,6 +36,10 @@ def get_new_token(deployment_type):
     
     if (deployment_type == "s3"):
         refresh_token = get_refresh_token_from_secrets_manager()
+    else:
+        #Put your refresh token in here if running locally and can safely put the refresh token in the code
+        #Refresh token can be obtain by following the steps on https://tesla-info.com/tesla-token.php
+        refresh_token = ""
 
     tesla_auth_url = "https://auth.tesla.com/oauth2/v3/token"
     tesla_auth_response = requests.post(tesla_auth_url, json={
@@ -84,9 +85,16 @@ def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:
         month_object.put(Body=json.dumps(data))
 
 
-def seed_data(json_data_folder):
-    starting_month = int(input("Please enter the number of the month you first got solar: "))
-    starting_year = int(input("Please enter the year you first got solar as 4 digits: "))
-    current_year = datetime.now().year
-    current_month = datetime.now().month
+def seed_data(code_base = "", deployment_type=""):
+    year = int(input('Please enter the number of the year (YYYY) you first got solar: '))
+    month = int(input('Please enter the number of the month you first got solar: '))
+    day = 1
+    start_date = date(year, month, day)
+    end_date = date(datetime.now().year, datetime.now().month, datetime.now().day)
+
+    for dt in rrule.rrule(rrule.MONTHLY, dtstart=start_date, until=end_date):
+        month_in_two_digits = '{:02d}'.format(dt.month)
+        call_tesla_api(current_year = dt.year, month_in_two_digits = month_in_two_digits, code_base = code_base, deployment_type=deployment_type)
+        print(f"Downloaded data for {month_in_two_digits}-{dt.year}")
+
         

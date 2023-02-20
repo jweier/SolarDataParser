@@ -7,23 +7,25 @@ import os
 code_base = "C:\\PersonalCode\\SolarDataParser\\"
 
 json_data_folder = f"{code_base}\\assets\\rawjsondata\\"
-scripts_js_path = "C:\\PersonalCode\\SolarDataParser\\assets\\scripts.js"
+scripts_js_path = f"{code_base}\\assets\\scripts.js"
 
 deployment_type = "local"
+seed_data = "n"
 
-# Getting the list of directories
+#Getting the list of directories
 json_data_folder_dir = os.listdir(json_data_folder)
 
-# Checking if the list is empty or not
-# if len(json_data_folder_dir) == 0:
-#     seed_data = input("The JSON data folder directory appears to be empty. Would you like to seed the historial data? Y or N?: ").lower()
+#Checking if the list is empty or not
+if len(json_data_folder_dir) == 0:
+    seed_data = input("The JSON data folder directory appears to be empty. Would you like to seed the historial data? Y or N?: ").lower()
 
-# if seed_data == "y":
-#     print(f"Seeding historical data into {json_data_folder}")
-    #tesla.seed_data(json_data_folder)
+#Call to Tesla to seed each previous months worth of data
+if seed_data == "y":
+    print(f"Seeding historical data into {json_data_folder}")
+    tesla.seed_data(code_base = code_base, deployment_type = deployment_type)
     
 
-#Call to Tesla to get the latest copy of the monthly data and store in S3
+#Call to Tesla to get the latest copy of the monthly data
 tesla.call_tesla_api(code_base = code_base, deployment_type = deployment_type)
 
 all_variables = ""

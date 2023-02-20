@@ -1,18 +1,18 @@
-var lifetime_energy_imported_from_everywhere = 304.92
-var lifetime_net_energy = 121
-var lifetime_net_energy_value = 31
-var lifetime_solar_energy_exported = 426
-var lifetime_solar_energy_exported_value = 132
-var lifetime_avg_daily_electricity_usage = 16.05
-var lifetime_avg_daily_produced_by_solar = 22.42
-var timestamp = ['02-01-2023', '02-02-2023', '02-03-2023', '02-04-2023', '02-05-2023', '02-06-2023', '02-07-2023', '02-08-2023', '02-09-2023', '02-10-2023', '02-11-2023', '02-12-2023', '02-13-2023', '02-14-2023', '02-15-2023', '02-16-2023', '02-17-2023', '02-18-2023', '02-19-2023']
-var solar_energy_exported = [17, 28, 20, 31, 26, 23, 16, 23, 26, 8, 27, 31, 20, 27, 28, 24, 11, 3, 28]
-var grid_energy_imported = [10, 8, 13, 10, 14, 8, 8, 11, 7, 8, 10, 8, 8, 7, 7, 8, 6, 8, 7]
-var grid_energy_exported_from_solar = [12, 15, 13, 23, 19, 17, 9, 18, 19, 4, 19, 23, 15, 15, 22, 17, 5, 0, 22]
-var consumer_energy_imported_from_grid = [10, 8, 13, 10, 14, 8, 8, 11, 7, 8, 10, 8, 8, 7, 7, 8, 6, 8, 7]
-var consumer_energy_imported_from_solar = [4, 13, 7, 7, 6, 5, 7, 5, 6, 4, 7, 7, 4, 11, 6, 6, 6, 2, 6]
-var net_energy = [1, 6, 0, 13, 5, 9, 0, 6, 12, -4, 8, 15, 7, 8, 14, 8, 0, -7, 14]
-var consumer_energy_imported_from_everywhere = [15, 21, 21, 17, 20, 14, 16, 17, 13, 13, 18, 15, 13, 19, 13, 15, 12, 11, 14]
+var lifetime_energy_imported_from_everywhere = 750.35
+var lifetime_net_energy = -305
+var lifetime_net_energy_value = -79
+var lifetime_solar_energy_exported = 445
+var lifetime_solar_energy_exported_value = 138
+var lifetime_avg_daily_electricity_usage = 26.8
+var lifetime_avg_daily_produced_by_solar = 15.9
+var timestamp = ['01-30-2023', '01-30-2023', '01-30-2023', '01-30-2023', '01-30-2023', '01-30-2023', '01-30-2023', '01-31-2023', '02-01-2023', '02-02-2023', '02-03-2023', '02-04-2023', '02-05-2023', '02-06-2023', '02-07-2023', '02-08-2023', '02-09-2023', '02-10-2023', '02-11-2023', '02-12-2023', '02-13-2023', '02-14-2023', '02-15-2023', '02-16-2023', '02-17-2023', '02-18-2023', '02-19-2023', '02-20-2023']
+var solar_energy_exported = [0, 0, 0, 0, 0, 0, 0, 3, 17, 28, 20, 31, 26, 23, 16, 23, 26, 8, 27, 31, 20, 27, 28, 24, 11, 3, 28, 15]
+var grid_energy_imported = [0, 0, 0, 0, 0, 0, 0, 426, 10, 8, 13, 10, 14, 8, 8, 11, 7, 8, 10, 8, 8, 7, 7, 8, 6, 8, 7, 8]
+var grid_energy_exported_from_solar = [0, 0, 0, 0, 0, 0, 0, 0, 12, 15, 13, 23, 19, 17, 9, 18, 19, 4, 19, 23, 15, 15, 22, 17, 5, 0, 22, 8]
+var consumer_energy_imported_from_grid = [0, 0, 0, 0, 0, 0, 0, 426, 10, 8, 13, 10, 14, 8, 8, 11, 7, 8, 10, 8, 8, 7, 7, 8, 6, 8, 7, 8]
+var consumer_energy_imported_from_solar = [0, 0, 0, 0, 0, 0, 0, 3, 4, 13, 7, 7, 6, 5, 7, 5, 6, 4, 7, 7, 4, 11, 6, 6, 6, 2, 6, 6]
+var net_energy = [0, 0, 0, 0, 0, 0, 0, -426, 1, 6, 0, 13, 5, 9, 0, 6, 12, -4, 8, 15, 7, 8, 14, 8, 0, -7, 14, 0]
+var consumer_energy_imported_from_everywhere = [0, 0, 0, 0, 0, 0, 0, 430, 15, 21, 21, 17, 20, 14, 16, 17, 13, 13, 18, 15, 13, 19, 13, 15, 12, 11, 14, 15]
 
 
 

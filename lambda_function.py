@@ -8,7 +8,6 @@ conn = boto3.client('s3')
 
 deployment_type = 's3'
 code_base = os.getenv('BUCKET_NAME')
-# code_base = "jayweier.com"
 print(code_base)
 
 def lambda_handler(event, context):
