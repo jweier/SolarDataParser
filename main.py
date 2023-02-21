@@ -2,12 +2,14 @@
 
 import tesla
 import pandas
+from pathlib import Path
 import os
 
-code_base = "C:\\PersonalCode\\SolarDataParser\\"
+code_base = Path("C:/PersonalCode/SolarDataParser/")
 
-json_data_folder = f"{code_base}\\assets\\rawjsondata\\"
-scripts_js_path = f"{code_base}\\assets\\scripts.js"
+json_data_folder = code_base / "assets/rawjsondata/"
+scripts_js_path = code_base / "assets/scripts.js"
+
 
 deployment_type = "local"
 seed_data = "n"
@@ -40,7 +42,7 @@ for file in all_json_files:
 
 #Download the previous months files and merge into a single dataframe
 for previous_month in previous_months_json_files_list:
-    json_file_path = f"{json_data_folder}{previous_month}"
+    json_file_path = f"{json_data_folder}/{previous_month}"
     data = pandas.read_json(json_file_path)
     time_series_data = pandas.DataFrame(data["response"]["time_series"])
     time_series = pandas.concat([time_series,time_series_data], ignore_index=True)

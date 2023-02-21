@@ -4,9 +4,8 @@ from datetime import datetime, date
 from dateutil import rrule
 import calendar
 import boto3
-from botocore.exceptions import ClientError
-
 s3 = boto3.resource('s3')
+from botocore.exceptions import ClientError
 
 #Delete this function if running locally and refresh_token is defined at the top
 def get_refresh_token_from_secrets_manager():
@@ -55,8 +54,7 @@ def get_new_token(deployment_type):
     return(new_access_token)
 
 #By default, call the Tesla API to get the current months data
-def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:%m}'.format(datetime.today()), code_base="", deployment_type=""
-):
+def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:%m}'.format(datetime.today()), code_base="", deployment_type=""):
 
     #Get the last day of a month
     res = calendar.monthrange(current_year, int(month_in_two_digits))
