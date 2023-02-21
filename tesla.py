@@ -3,38 +3,12 @@ import json
 from datetime import datetime, date
 from dateutil import rrule
 import calendar
-import boto3
-s3 = boto3.resource('s3')
-from botocore.exceptions import ClientError
-
-#Delete this function if running locally and refresh_token is defined at the top
-def get_refresh_token_from_secrets_manager():
-
-    secret_name = "SolarDataParser/refresh_token"
-    region_name = "us-east-1"
-
-    # Create a Secrets Manager client
-    session = boto3.session.Session()
-    client = session.client(
-        service_name='secretsmanager',
-        region_name=region_name
-    )
-
-    try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
-    except ClientError as e:
-        raise e
-
-    secrets = json.loads(get_secret_value_response['SecretString'])
-
-    return secrets['refresh_token']
+import aws_actions
 
 def get_new_token(deployment_type):
     
     if (deployment_type == "s3"):
-        refresh_token = get_refresh_token_from_secrets_manager()
+        refresh_token = aws_actions.get_refresh_token_from_secrets_manager()
     else:
         #Put your refresh token in here if running locally and can safely put the refresh token in the code
         #Refresh token can be obtain by following the steps on https://tesla-info.com/tesla-token.php
@@ -76,6 +50,8 @@ def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:
         with open(f'{code_base}/{data_key_name}', 'w') as file:
             file.write(json.dumps(data))
     elif (deployment_type == "s3"):
+        import boto3
+        s3 = boto3.resource('s3')
         month_object = s3.Object(
         bucket_name=code_base, 
         key=data_key_name
