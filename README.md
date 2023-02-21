@@ -11,7 +11,7 @@ A dashboard for Tesla Solar customers that don't have a PowerWall/Energy Gateway
 ## Environment Setup
 * Install Python 3
   * Windows - https://www.python.org/downloads/
-  * Pi OS - sudo apt-get install python3
+  * Pi OS - `sudo apt-get install python3`
 * Open a command prompt or terminal window and go to the directory where you unzipped the code
 * Run the following command to install the required Python packages:
 
