@@ -1,10 +1,10 @@
-import boto3
 import json 
 
-s3 = boto3.resource('s3')
-from botocore.exceptions import ClientError
-
 def get_refresh_token_from_secrets_manager():
+
+    import boto3
+    s3 = boto3.resource('s3')
+    from botocore.exceptions import ClientError
 
     secret_name = "SolarDataParser/refresh_token"
     region_name = "us-east-1"
