@@ -73,7 +73,7 @@ def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:
 
     #Write the JSON file to either local storage or S3 storage, depending on deployment type
     if(deployment_type == "local"):
-        with open(f'{code_base}\\{data_key_name}', 'w') as file:
+        with open(f'{code_base}/{data_key_name}', 'w') as file:
             file.write(json.dumps(data))
     elif (deployment_type == "s3"):
         month_object = s3.Object(
