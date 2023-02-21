@@ -15,7 +15,7 @@ A dashboard for Tesla Solar customers that don't have a PowerWall/Energy Gateway
 * Open a command prompt or terminal window and go to the directory where you unzipped the code
 * Run the following command to install the required Python packages:
 
-python -m pip install -r requirements.txt
+`python -m pip install -r requirements.txt`
 
 ## Get your Tesla API Refresh Token
 This token should be kept private as it allows anyone with the token to generate more API tokens to access your data.
@@ -40,7 +40,7 @@ This token should be kept private as it allows anyone with the token to generate
 If the folder containing the raw JSON dumps from the Tesla API is empty then you will be asked if you'd like to seed the data. This step should only be performed once and is only needed for initial setup. You will be asked the month/year you first started generating solar energy and then it will call the Tesla API and download the data for each month since you specified. Unfortunately, it has to be downloaded per month because if the time period is any larger Tesla summarizes the data and you don't get the daily level of detail.
 
 * Run the following command to start the script
-python main.py
+`python main.py`
   * If you receive an error about numpy import failing then run sudo apt-get install libatlas-base-dev
 * When asked about seeding the initial type Y
 * When asked for the year, type in the year using 4 numbers
