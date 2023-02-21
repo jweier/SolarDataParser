@@ -40,7 +40,9 @@ This token should be kept private as it allows anyone with the token to generate
 If the folder containing the raw JSON dumps from the Tesla API is empty then you will be asked if you'd like to seed the data. This step should only be performed once and is only needed for initial setup. You will be asked the month/year you first started generating solar energy and then it will call the Tesla API and download the data for each month since you specified. Unfortunately, it has to be downloaded per month because if the time period is any larger Tesla summarizes the data and you don't get the daily level of detail.
 
 * Run the following command to start the script
+
 `python main.py`
+
   * If you receive an error about numpy import failing then run sudo apt-get install libatlas-base-dev
 * When asked about seeding the initial type Y
 * When asked for the year, type in the year using 4 numbers
