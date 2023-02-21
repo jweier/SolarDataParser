@@ -48,6 +48,9 @@ If the folder containing the raw JSON dumps from the Tesla API is empty then you
 * When asked for the year, type in the year using 4 numbers
 * When asked for the month, type in the month using 1-2 numbers
 
+## Updating Daily
+The data is only updated once a day for the API calls that are leveraged. Therefore, there is no point in updating multiple times per day.
 
+To update the data daily, simply schedule something like cron or Windows Task Manager to run the `python main.py` command each day.
 
 
