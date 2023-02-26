@@ -38,7 +38,10 @@ def get_energy_site_id(access_token):
     tesla_energy_site_id_response = requests.get(tesla_energy_site_id_url, headers=tesla_headers)
     energy_site_id_data = tesla_energy_site_id_response.json()
 
-    energy_site_id = energy_site_id_data["response"][0]["energy_site_id"]
+    for site_id in energy_site_id_data["response"]:
+        if site_id["energy_site_id"] is not None:
+            energy_site_id = site_id["energy_site_id"]
+            print(energy_site_id)
 
     return energy_site_id
 
