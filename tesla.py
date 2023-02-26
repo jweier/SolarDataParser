@@ -27,6 +27,21 @@ def get_new_token(deployment_type):
 
     return(new_access_token)
 
+def get_energy_site_id(access_token):
+    tesla_energy_site_id_url = "https://owner-api.teslamotors.com/api/1/products"
+
+    tesla_headers = {
+        'Authorization': 'Bearer ' + access_token,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
+    }
+
+    tesla_energy_site_id_response = requests.get(tesla_energy_site_id_url, headers=tesla_headers)
+    energy_site_id_data = tesla_energy_site_id_response.json()
+
+    energy_site_id = energy_site_id_data["response"][0]["energy_site_id"]
+
+    return energy_site_id
+
 #By default, call the Tesla API to get the current months data
 def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:%m}'.format(datetime.today()), code_base="", deployment_type=""):
 
@@ -35,13 +50,15 @@ def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:
     last_day_of_month = str(res[1])
 
     new_access_token = get_new_token(deployment_type)
+    energy_site_id = get_energy_site_id(new_access_token)
+    
     tesla_headers = {
         'Authorization': 'Bearer ' + new_access_token,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
     }
 
     data_key_name = f'assets/rawjsondata/{current_year}-{month_in_two_digits}.json'
-    tesla_url = f'https://owner-api.teslamotors.com/api/1/energy_sites/2252180269197839/calendar_history?period=month&kind=energy&time_zone=America/New_York&start_date={current_year}-{month_in_two_digits}-01T00%3A00%3A00-05%3A00&end_date={current_year}-{month_in_two_digits}-{last_day_of_month}T23%3A59%3A59-05%3A00'
+    tesla_url = f'https://owner-api.teslamotors.com/api/1/energy_sites/{energy_site_id}/calendar_history?period=month&kind=energy&time_zone=America/New_York&start_date={current_year}-{month_in_two_digits}-01T00%3A00%3A00-05%3A00&end_date={current_year}-{month_in_two_digits}-{last_day_of_month}T23%3A59%3A59-05%3A00'
     tesla_response = requests.get(tesla_url, headers=tesla_headers)
     data = tesla_response.json()
 
