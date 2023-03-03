@@ -41,7 +41,7 @@ def get_energy_site_id(access_token):
     for site_id in energy_site_id_data["response"]:
         if site_id["energy_site_id"] is not None:
             energy_site_id = site_id["energy_site_id"]
-            print(energy_site_id)
+            print(f"Energy Site ID: {energy_site_id}")
 
     return energy_site_id
 
@@ -51,6 +51,7 @@ def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:
     #Get the last day of a month
     res = calendar.monthrange(current_year, int(month_in_two_digits))
     last_day_of_month = str(res[1])
+    print(f"Last Day of Month: {last_day_of_month}")
 
     new_access_token = get_new_token(deployment_type)
     energy_site_id = get_energy_site_id(new_access_token)
@@ -60,8 +61,22 @@ def call_tesla_api(current_year = datetime.now().year, month_in_two_digits = '{:
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
     }
 
+    if int(month_in_two_digits) > 3 and int(month_in_two_digits) < 11:
+        start_utc_diff = "04"
+        end_utc_diff = "04"
+    elif int(month_in_two_digits) > 11 and int(month_in_two_digits) < 3:
+        start_utc_diff = "05"
+        end_utc_diff = "05"
+    elif int(month_in_two_digits) == 3:
+        start_utc_diff = "05"
+        end_utc_diff = "04"
+    elif int(month_in_two_digits) == 11:
+        start_utc_diff = "04"
+        end_utc_diff = "05"
+
     data_key_name = f'assets/rawjsondata/{current_year}-{month_in_two_digits}.json'
-    tesla_url = f'https://owner-api.teslamotors.com/api/1/energy_sites/{energy_site_id}/calendar_history?period=month&kind=energy&time_zone=America/New_York&start_date={current_year}-{month_in_two_digits}-01T00%3A00%3A00-05%3A00&end_date={current_year}-{month_in_two_digits}-{last_day_of_month}T23%3A59%3A59-05%3A00'
+    tesla_url = f'https://owner-api.teslamotors.com/api/1/energy_sites/{energy_site_id}/calendar_history?period=month&kind=energy&time_zone=America/New_York&start_date={current_year}-{month_in_two_digits}-01T00%3A00%3A00-{start_utc_diff}%3A00&end_date={current_year}-{month_in_two_digits}-{last_day_of_month}T23%3A59%3A59-{end_utc_diff}%3A00'
+    print(f"Tesla URL: {tesla_url}")
     tesla_response = requests.get(tesla_url, headers=tesla_headers)
     data = tesla_response.json()
 

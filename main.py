@@ -35,7 +35,7 @@ all_variables = ""
 previous_months_json_files_list = []
 time_series = pandas.DataFrame()
 
-#Parse through the S3 bucket and find JSON files for previous months data
+#Parse through the JSON directory and find JSON files for previous months data
 all_json_files = os.listdir(json_data_folder)
 for file in all_json_files:
     previous_months_json_files_list.append(file)
@@ -44,6 +44,8 @@ for file in all_json_files:
 for previous_month in previous_months_json_files_list:
     json_file_path = f"{json_data_folder}/{previous_month}"
     data = pandas.read_json(json_file_path)
+    print(f"JSON File Path: {json_file_path}")
+    # print(data["response"]["time_series"])
     time_series_data = pandas.DataFrame(data["response"]["time_series"])
     time_series = pandas.concat([time_series,time_series_data], ignore_index=True)
     time_series = time_series[time_series["solar_energy_exported"]!=0]
