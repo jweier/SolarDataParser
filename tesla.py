@@ -39,7 +39,7 @@ def get_energy_site_id(access_token):
     energy_site_id_data = tesla_energy_site_id_response.json()
 
     for site_id in energy_site_id_data["response"]:
-        if site_id["energy_site_id"] is not None:
+        if 'energy_site_id' in site_id:
             energy_site_id = site_id["energy_site_id"]
             print(f"Energy Site ID: {energy_site_id}")
 
