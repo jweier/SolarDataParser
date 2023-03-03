@@ -90,7 +90,8 @@ def lambda_handler(event, context):
     for column in time_series:
         if column != "timestamp":
             time_series[column] = time_series[column].div(1000)
-            time_series[column] = time_series[column].astype('int')
+            # time_series[column] = time_series[column].astype('int')
+            time_series[column] = time_series[column].apply(lambda x: format(float(x),".2f"))
         elif column == "timestamp":
             time_series[column]=time_series[column].str[:10]
             time_series[column] = pandas.to_datetime(time_series[column], format='%Y-%m-%d')

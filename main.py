@@ -10,7 +10,6 @@ code_base = Path("C:/PersonalCode/SolarDataParser/")
 json_data_folder = code_base / "assets/rawjsondata/"
 scripts_js_path = code_base / "assets/scripts.js"
 
-
 deployment_type = "local"
 seed_data = "n"
 
@@ -107,7 +106,8 @@ all_variables += f'var lifetime_avg_daily_produced_by_solar = {lifetime_avg_dail
 for column in time_series:
     if column != "timestamp":
         time_series[column] = time_series[column].div(1000)
-        time_series[column] = time_series[column].astype('int')
+        # time_series[column] = time_series[column].astype('float')
+        time_series[column] = time_series[column].apply(lambda x: format(float(x),".2f"))
     elif column == "timestamp":
         time_series[column]=time_series[column].str[:10]
         time_series[column] = pandas.to_datetime(time_series[column], format='%Y-%m-%d')
