@@ -273,9 +273,14 @@ legend: {
     vertical: 10
   },
 },
-tooltip: {
+tooltip: { 
   x: {
-    format: 'MM/dd/yy'
+    format: 'MM/dd/yy',
+  },
+  y: {
+    formatter: (value) => {
+      return value.toFixed(2)
+    },
   },
 },
 };
@@ -323,9 +328,14 @@ legend: {
     vertical: 10
   },
 },
-tooltip: {
+tooltip: { 
   x: {
-    format: 'MM/dd/yy'
+    format: 'MM/dd/yy',
+  },
+  y: {
+    formatter: (value) => {
+      return value.toFixed(2)
+    },
   },
 },
 };
