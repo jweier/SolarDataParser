@@ -62,7 +62,7 @@ def lambda_handler(event, context):
     all_variables += f'var lifetime_net_energy = {lifetime_net_energy}\n'
 
     #The value of the the net energy sent back to Eversource
-    lifetime_net_energy_value = round(lifetime_net_energy * .26)
+    lifetime_net_energy_value = round(lifetime_net_energy * .2395)
     print(f'Lifetime Net Energy Value: {lifetime_net_energy_value}')
     all_variables += f'var lifetime_net_energy_value = {lifetime_net_energy_value}\n'
 
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
     all_variables += f'var lifetime_solar_energy_exported = {lifetime_solar_energy_exported}\n'
 
     #The value of all of the solar energy produced by the system
-    lifetime_solar_energy_exported_value = round((time_series["solar_energy_exported"].sum()/1000) * .31)
+    lifetime_solar_energy_exported_value = round((time_series["solar_energy_exported"].sum()/1000) * .29636)
     print(f'Lifetime Solar Energy Created Value: {lifetime_solar_energy_exported_value}')
     all_variables += f'var lifetime_solar_energy_exported_value = {lifetime_solar_energy_exported_value}\n'
 
